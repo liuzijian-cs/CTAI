@@ -3,14 +3,17 @@ from torch.utils import data
 import os
 import cv2 as cv
 import SimpleITK as sitk
+import torch
+import numpy as np
 
 
 # Note:SimpleITK 是一个用于医学图像处理的开源库，提供了简单易用的程序接口来访问 ITK
 # ITK (Insight Segmentation and Registration Toolkit) 的功能。ITK 是一个广泛用于医学图像处理、分割和注册的高级开源库。
 
 
-def get_train_file_list(data_path, get_dice=False):
+def get_file_list(data_path, get_dice=False):
     """
+    根据 data_path 返回每一个数据的路径
     :param data_path: 数据集路径
     :param include_all_phases: 是否使用所有数据进行训练
     :param get_dice: false - 只返回 image_list
@@ -33,44 +36,46 @@ def get_train_file_list(data_path, get_dice=False):
     return image_list
 
 
-def get_dataset(data_path, have):
-    global test_image, test_mask
-    image_list, mask_list, image_data, mask_data = [], [], [], []  # 初始化局部变量
+def normalize_data(data):
+    """
+    :param data: 输入数据，进行最大最小值归一化
+    """
+    if not data.any():  # data.any(): 检查 data 数组中是否至少有一个元素是非零的。
+        return data
+    return (data - data.min()) / (data.max() - data.min())
 
-    image_list = get_train_file_list(data_path)  # return image_list - (file_path, patient_id, image_id)
+
+def get_dataset(data_path, have=True):
+    """
+    :param data_path:
+    :param have: 是否对遮罩数据 (mask_array) 进行存在性检查
+    """
+    image_data, mask_data = [], []
+
+    image_list = get_file_list(data_path)  # return image_list - (file_path, patient_id, image_id)
+
     for image_path in image_list:
-        # image data:
-        image_data.append(sitk.ReadImage(image_path[0]))
-        image_array = sitk.GetArrayFromImage(image_data)
         # mask data
         mask_path = image_path[0].replace('.dcm', '_mask.png')
         mask_array = cv.imread(mask_path, cv.IMREAD_GRAYSCALE)
-
-
-
-    for i in image_list:
-        image = sitk.ReadImage(i[0])
-        image_array = sitk.GetArrayFromImage(image)
-        mask = i[0].replace('.dcm', '_mask.png')
-        mask_array = cv.imread(mask, cv.IMREAD_GRAYSCALE)
-
-        if have:
+        if have:  # 检查是否有匹配的mask是否存在，如果不存在则跳过当前image
             if not mask_array.any():
                 continue
+        mask_array = normalize_data(mask_array)  # 最大最小值归一化
+        mask_tensor = torch.from_numpy(mask_array).float()  # 将numpy数组转换为张量
+        mask_id = os.path.basename(image_path[0]).replace('_mask.png', '')
+        mask_data.append((mask_id, mask_tensor))
 
-        mask_array = data_in_one(mask_array)
-        mask_tensor = torch.from_numpy(mask_array).float()
-        j = i[0].split('/')[-1].replace('_mask.png', '')
-        mask_data.append((j, mask_tensor))
-
-        ROI_mask = np.zeros(shape=image_array.shape)
-        ROI_mask_mini = np.zeros(shape=(1, 160, 100))
-        ROI_mask_mini[0] = image_array[0][270:430, 200:300]
-        ROI_mask_mini = data_in_one(ROI_mask_mini)
-        ROI_mask[0][270:430, 200:300] = ROI_mask_mini[0]
-        test_image = ROI_mask
-        image_tensor = torch.from_numpy(ROI_mask).float()
-        image_data.append((image_tensor, i[1], i[2]))
+        # image data:
+        image_array = sitk.GetArrayFromImage(sitk.ReadImage(image_path[0]))
+        # ROI: ROI（Region of Interest）指的是图像或数据中感兴趣的区域
+        roi_mask = np.zeros(shape=image_array.shape)  # 创建了与“image_array”形状相同的零数组
+        roi_mask_mini = np.zeros(shape=(1, 160, 100))  # 创建了一个 dim = 1， size =160*100 的零数组
+        roi_mask_mini[0] = image_array[0][270:430, 200:300]
+        roi_mask_mini = normalize_data(roi_mask_mini)
+        roi_mask[0][270:430, 200:300] = roi_mask_mini[0]
+        image_tensor = torch.from_numpy(roi_mask).float()
+        image_data.append((image_tensor, image_path[1], image_path[2]))
 
     return image_data, mask_data
 
