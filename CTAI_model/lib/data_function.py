@@ -1,5 +1,4 @@
 from torch.utils import data
-
 import os
 import cv2 as cv
 import SimpleITK as sitk
@@ -83,7 +82,7 @@ def get_dataset(data_path, have=True):
 class Dataset(data.Dataset):
     """
     数据集类，将数据从数据集路径中读取并保存在类中。
-    TODO
+    :have 检查image - mask 是否匹配，默认为True
     """
 
     def __init__(self, args, have=True):
@@ -96,3 +95,17 @@ class Dataset(data.Dataset):
 
     def __len__(self):
         return len(self.imgs[0])
+
+
+def get_dataloader(args):
+    """
+    获取dataloader
+    """
+    dataset = Dataset(args, have=args.have)
+    test_size = int(args.test_ratio * len(dataset))
+    train_dataset, test_dataset = torch.utils.data.random_split(dataset, [len(dataset) - test_size, test_size])
+    train_loader = data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=args.shuffle,
+                                   num_workers=args.num_workers)
+    test_loader = data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=args.shuffle,
+                                  num_workers=args.num_workers)
+    return train_loader, test_loader
