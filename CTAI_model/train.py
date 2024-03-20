@@ -9,7 +9,7 @@ from lib.data_function import get_dataloader
 
 parser = argparse.ArgumentParser()  # 声明参数解释器
 parser.add_argument('--device', type=str, default='cuda:0', help='')  # 设备：默认GPU
-parser.add_argument('--data_path', type=str, default='D:\CTAI-master\CTAI-master\CTAI_model\ct_data', help='dataset path')  # 指定使用的数据集路径
+parser.add_argument('--data_path', type=str, default='E:\ct_data', help='dataset path')  # 指定使用的数据集路径
 parser.add_argument('--save', type=str, default='model_save', help='save path')  # 模型保存路径
 parser.add_argument('--log_file', type=str, default='model_save/log.txt', help='log file')  # 日志文件
 parser.add_argument('--test_ratio', type=float, default=0.2)  # 测试集比例(本项目未设置开发集)
@@ -21,7 +21,7 @@ parser.add_argument('--have', type=bool, default=True)  # 是否检查 image 与
 parser.add_argument('--print_every', type=int, default=50, help='')  # 每训练多少次迭代输出一次日志信息
 parser.add_argument('--batch_size', type=int, default=16)  # batch_size 大小
 parser.add_argument('--shuffle', type=bool, default=True)  # shuffle
-parser.add_argument('--num_workers', type=int, default=16)  # 多线程 dataloader
+parser.add_argument('--num_workers', type=int, default=8)  # 多线程 dataloader：！请根据CPU线程数配置
 
 args = parser.parse_args()
 
