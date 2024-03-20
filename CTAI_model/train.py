@@ -14,7 +14,7 @@ parser.add_argument('--data_path', type=str, default='D:\CTAI_source\CTAI_model\
                     help='dataset path')  # 指定使用的数据集路径
 parser.add_argument('--save', type=str, default='model_save', help='save path')  # 模型保存路径
 parser.add_argument('--log_file', type=str, default='model_save/log.txt', help='log file')  # 日志文件
-parser.add_argument('--test_ratio', type=float, default=0.1)  # 测试集比例(本项目未设置开发集)
+parser.add_argument('--test_ratio', type=float, default=0.2)  # 测试集比例(本项目未设置开发集)
 parser.add_argument('--seed', type=int, default=3407, help='random seed')  # 随机种子，如果设置为None 则完全随机
 parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate')  # 学习率
 parser.add_argument('--epochs', type=int, default=2)  # 训练轮数
@@ -135,7 +135,7 @@ def main():
         train_dice.append(train_dice_)
         test_dice.append(test_dice_)
 
-        print_log(args, f"epoch: {epoch:03d}, train loss:{train_loss_:.5f}, test loss: {test_loss_:.5f}, train dice: {train_dice_:.5f}, test dice: {test_dice_:.5f}, epoch total time cost: {(t3_epoch-t1_epoch):.2f} (train:{(t2_epoch - t1_epoch):.2f}, test: {(t3_epoch-t2_epoch):.2f})")
+        print_log(args, f"epoch: {epoch:03d}, train loss:{train_loss_:.5f}, test loss: {test_loss_:.5f}, train dice: {train_dice_:.5f}, test dice: {test_dice_:.5f}, epoch time cost: {(t3_epoch-t1_epoch):.2f} (train: {(t2_epoch - t1_epoch):.2f}, test: {(t3_epoch-t2_epoch):.2f})")
 
 
         torch.save(model.state_dict(),os.path.join(args.save, f"{epoch:03d}.pth")) # 模型保存
