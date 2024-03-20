@@ -3,7 +3,7 @@ import time
 import numpy as np
 import torch
 import argparse
-from lib.base_function import print_log, dice_coefficient,draw_picture
+from lib.base_function import print_log,draw_picture
 from lib.data_function import get_dataloader
 from lib.dice_loss import dice
 from model.unet import UNet
@@ -135,7 +135,7 @@ def main():
         train_dice.append(train_dice_)
         test_dice.append(test_dice_)
 
-        print_log(args, f"epoch: {epoch:03d}, train loss:{train_loss_:.10f}, test loss: {test_loss_:.10f}, train dice: {train_dice_:.10f}, test dice: {test_dice_:.10f}, train time cost: {(t2_epoch - t1_epoch):.2f}, test time cost: {(t3_epoch-t2_epoch):.2f}")
+        print_log(args, f"epoch: {epoch:03d}, train loss:{train_loss_:.5f}, test loss: {test_loss_:.5f}, train dice: {train_dice_:.5f}, test dice: {test_dice_:.5f}, epoch total time cost: {(t3_epoch-t1_epoch):.2f} (train:{(t2_epoch - t1_epoch):.2f}, test: {(t3_epoch-t2_epoch):.2f})")
 
 
         torch.save(model.state_dict(),os.path.join(args.save, f"{epoch:03d}.pth")) # 模型保存
@@ -147,4 +147,4 @@ if __name__ == "__main__":
     time_start = time.time()
     main()
     time_end = time.time()
-    print(f"Total time cost: {(time_end - time_start):.4f}")
+    print(f"Total time cost: {(time_end - time_start):.2f}")

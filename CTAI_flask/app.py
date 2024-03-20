@@ -8,7 +8,9 @@ import torch
 from flask import *
 
 import core.main
-import core.net.unet as net
+from core.net.unet import UNet
+
+
 
 UPLOAD_FOLDER = r'./uploads'
 
@@ -88,7 +90,7 @@ def show_photo(file):
 
 def init_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = net.Unet(1, 1).to(device) # TODO
+    model = UNet(1, 1).to(device)
     if torch.cuda.is_available():
         model.load_state_dict(torch.load("./core/net/model.pth"))
     else:

@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from CTAI_model.net import unet
+from CTAI_model.model.unet import UNet
 import SimpleITK as sitk
 
 device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
@@ -28,7 +28,7 @@ def get_data(data_path):
     return image_tensor
 
 def init_model():
-    model = unet.Unet(1, 1).to(device)
+    model = UNet(1, 1).to(device)
     if torch.cuda.is_available():
         model.load_state_dict(torch.load("./model.pth", map_location=device))
     else:
